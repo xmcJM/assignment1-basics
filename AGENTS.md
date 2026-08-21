@@ -18,6 +18,10 @@ CS336 is intentionally implementation-heavy. Students are expected to write subs
 * Help students understand approaches or algorithms at a high level and nudge them in the right direction.
 * Suggest sanity checks, toy examples, assertions, and profiler-based investigations through active dialog with the student.
 
+
+* AI agents may install uv, install project dependencies, and run tests.
+They must not implement or edit assignment solutions.
+
 ## What AI Agents SHOULD NOT Do
 
 * Write any python or pseudocode
