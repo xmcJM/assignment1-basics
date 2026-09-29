@@ -46,8 +46,41 @@ class RotaryPositionalEmbedding(nn.Module):
             positions[:,None] * frequencies[None, :]
         )
 
-    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
-         return self.weight[token_ids]
-        
+        # cos 和 sin 不参与训练
+        self.register_buffer(
+            "cos_cache",
+            torch.cos(angles)
+        )
+        self.register_buffer(
+            "sin_cache",
+            torch.sin(angles)
+        )
+
+    def forward(
+            self, 
+            token_ids: torch.Tensor, 
+            token_positions: torch.Tensor) -> torch.Tensor:
+         if x.shape[-1] != self.d_k:
+            raise ValueError(
+                f"Expected last dimension {self.d_k}, "
+                f"got {x.shape[-1]}"
+            )
+
+        input_dtype = x.dtype
+
+        cos = self.cos_cache[token_positions].to(input_dtype)
+        sin = self.sin_cache[token_positions].to(input_dtype)
+
+        x_even = [..., 0::2]
+        x_odd = [..., 1::2]
+
+        rotated_even = x_even*cos - x_odd*sin
+        rotated_odd = x_even*sin + x_odd*cos
+
+        result = torch.stack(
+            (rotated_even, rotated_odd),
+            dim=-1
+        ).flatten(start_dim=-2)
+        return result.to(input_dtype)
     
 
